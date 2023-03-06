@@ -37,6 +37,11 @@ app.get("/wise-sayings/:id", async (req, res) => {
     id,
   ]);
 
+  if (rows.length == 0) {
+    res.status(404).send("not found");
+    return;
+  }
+  
   res.json(rows[0]);
 });
 
