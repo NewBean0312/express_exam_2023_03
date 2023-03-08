@@ -12,6 +12,7 @@ const pool = mysql.createPool({
 });
 
 const app = express();
+app.use(express.json());
 const port = 3000;
 
 const wiseSayings = [
@@ -20,7 +21,7 @@ const wiseSayings = [
     author: "홍길동",
   },
   {
-    content: "나는 의적이다.",
+    content: "나는 도적이다.",
     author: "임꺽정",
   },
 ];
@@ -31,9 +32,41 @@ app.get("/wise-sayings", async (req, res) => {
   res.json(rows);
 });
 
+app.post("/wise-sayings", async (req, res) => {
+  const { author, content } = req.body;
+
+  if (!author) {
+    res.status(400).json({
+      msg: "author required",
+    });
+    return;
+  }
+
+  if (!content) {
+    res.status(400).json({
+      msg: "content required",
+    });
+    return;
+  }
+
+  const [rs] = await pool.query(
+    `
+    INSERT INTO wise_saying
+    SET regDate = NOW(),
+    content = ?,
+    author = ?
+    `,
+    [content, author]
+  );
+
+  res.status(201).json({
+    id: rs.insertId,
+  });
+});
+
 app.get("/wise-sayings/:id", async (req, res) => {
   const { id } = req.params;
-  const [rows] = await pool.query("SELECT * FROM wise_saying WHERE id = ?", [
+  const [rows] = await pool.query("SELECT * FROM wise_saying WhERE id = ?", [
     id,
   ]);
 
@@ -41,7 +74,7 @@ app.get("/wise-sayings/:id", async (req, res) => {
     res.status(404).send("not found");
     return;
   }
-  
+
   res.json(rows[0]);
 });
 
