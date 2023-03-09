@@ -78,6 +78,32 @@ app.get("/wise-sayings/:id", async (req, res) => {
   res.json(rows[0]);
 });
 
+app.delete("/wise-sayings/:id", async (req, res) => {
+  const { id } = req.params;
+  const [rows] = await pool.query("SELECT * FROM wise_saying WhERE id = ?", [
+    id,
+  ]);
+
+  if (rows.length == 0) {
+    res.status(404).send("not found");
+    return;
+  }
+
+  const [rs] = await pool.query(
+    `
+    DELETE FROM wise_saying
+    WHERE id = ?
+    `,
+    [id]
+  );
+
+  res.status(200).json({
+    id,
+  });
+
+  res.json(rows[0]);
+});
+
 app.patch("/wise-sayings/:id", async (req, res) => {
   const { id } = req.params;
   const { author, content } = req.body;
